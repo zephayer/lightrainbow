@@ -1,2 +1,2 @@
 # lightrainbow
-A personal blog project.
+A personal blog project done by lightrainbow.
