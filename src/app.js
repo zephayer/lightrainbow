@@ -1,6 +1,6 @@
 /* ============================================
  * 总包计算器 - 核心逻辑
- * 计算口径：授予价值（授予日收盘价 × 授予日汇率 × 授予股数）
+ * 计算口径：授予价值（授予日上月均价 × 授予日上月最后一天汇率 × 授予股数）
  * 非交易日取数：往前找最近交易日
  * ============================================ */
 
@@ -29,18 +29,32 @@ function prevDateIn(dataset, dateStr) {
   return ans >= 0 ? dataset[ans] : null;
 }
 
-/* 取授予日收盘价（股价独立往前找最近交易日） */
-function getClose(dateStr) {
-  const td = prevDateIn(window.STOCK_DATES, dateStr);
-  if (!td) return null;
-  return parseFloat(window.MT_STOCK[td]);
+/* 取授予日前一个自然月的平均收盘价
+ * 如 2024-06-15 → 取 2024年5月 所有交易日收盘价的平均值 */
+function getPrevMonthAvgClose(dateStr) {
+  const [y, m] = dateStr.split('-').map(Number);
+  // 前任自然月
+  let py = m === 1 ? y - 1 : y;
+  let pm = m === 1 ? 12 : m - 1;
+  const prefix = String(py) + '-' + String(pm).padStart(2, '0') + '-';
+  const closes = window.STOCK_DATES
+    .filter(d => d.startsWith(prefix))
+    .map(d => parseFloat(window.MT_STOCK[d]));
+  if (closes.length === 0) return null;
+  return closes.reduce((a, b) => a + b, 0) / closes.length;
 }
 
-/* 取授予日汇率（汇率独立往前找最近交易日） */
-function getRate(dateStr) {
-  const td = prevDateIn(window.RATE_DATES, dateStr);
-  if (!td) return null;
-  return window.HKD_RATE[td] != null ? parseFloat(window.HKD_RATE[td]) : null;
+/* 取授予日前一个自然月最后一天汇率
+ * 如 2024-06-15 → 取 2024年5月 最后一个交易日的汇率 */
+function getPrevMonthLastRate(dateStr) {
+  const [y, m] = dateStr.split('-').map(Number);
+  let py = m === 1 ? y - 1 : y;
+  let pm = m === 1 ? 12 : m - 1;
+  const prefix = String(py) + '-' + String(pm).padStart(2, '0') + '-';
+  const rateDates = window.RATE_DATES.filter(d => d.startsWith(prefix));
+  if (rateDates.length === 0) return null;
+  const last = rateDates[rateDates.length - 1];
+  return window.HKD_RATE[last] != null ? parseFloat(window.HKD_RATE[last]) : null;
 }
 
 /* 最新收盘价（当前市价口径参考） */
@@ -130,8 +144,8 @@ function validateGrants(obj) {
 
 /* ---------- 计算 ---------- */
 function calcGrant(g) {
-  const close = getClose(g.grant_date);
-  const rate = getRate(g.grant_date);
+  const close = getPrevMonthAvgClose(g.grant_date);
+  const rate = getPrevMonthLastRate(g.grant_date);
   const shares = Number(g.grant_shares);
   const value = (close && rate) ? shares * close * rate : null;  // 授予总价值(人民币)
   return { ...g, close, rate, value };
@@ -193,7 +207,7 @@ function renderGrantCards() {
         <button class="grant-del" data-i="${i}">×</button>
       </div>
       <div class="grant-vest">${chips}</div>
-      <div class="grant-edit">授予日收盘 ${closeStr} · 汇率 ${rateStr}</div>
+      <div class="grant-edit">授予上月均收盘 ${closeStr} · 汇率 ${rateStr}</div>
     </div>`;
   }).join("");
 
@@ -246,7 +260,7 @@ function renderResult() {
   <table class="result-table">
     <thead>
       <tr>
-        <th>授予</th><th>授予股数</th><th>授予价值(¥)</th><th>授予日股价(HK$)</th>
+        <th>授予</th><th>授予股数</th><th>授予价值(¥)</th><th>授予上月均价(HK$)</th>
         <th>当日汇率</th><th>${targetYear}归属</th><th>${targetYear}计入(¥)</th>
       </tr>
     </thead>
