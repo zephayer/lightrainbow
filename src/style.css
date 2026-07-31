@@ -86,7 +86,7 @@ body {
 .btn-primary { background: var(--primary); color: #fff; width: 100%; margin-top: 12px; }
 .btn-primary:active { background: var(--primary-dark); }
 .btn-copy { background: #e6f4ff; color: var(--primary); font-size: 12px; padding: 8px 12px; }
-.btn-ghost { background: #f2f3f5; color: var(--text-sub); }
+.btn-ghost { background: #f2f3f5; color: var(--text-sub); font-size: 12px; padding: 8px 12px; }
 
 /* ---- 豆包 prompt ---- */
 .prompt-box, .paste-box {
