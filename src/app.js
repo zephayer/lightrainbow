@@ -331,19 +331,6 @@ function init() {
   // 解析 JSON
   $("#parse-json").addEventListener("click", doParse);
 
-  // 添加手动授予
-  $("#add-grant").addEventListener("click", () => {
-    const date = prompt("授予日期 (YYYY-MM-DD)：", new Date().toISOString().slice(0, 10));
-    if (!date) return;
-    const shares = prompt("授予股数：", "100");
-    if (!shares || !Number.isInteger(Number(shares))) return;
-    grants.push({
-      grant_date: date,
-      grant_shares: Number(shares),
-      vesting_schedule: [{ vesting_date: date, vesting_shares: Number(shares) }]
-    });
-    renderGrantCards();
-  });
 
   // 删除授予
   $("#grant-list").addEventListener("click", (e) => {
