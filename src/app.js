@@ -62,6 +62,8 @@ const DOUBAO_PROMPT = `你是一个数据整理助手。我会上传美团股票
 - 授予股数（Total Grant Shares）
 - 归属明细：每笔归属的日期（Vesting Date）和归属股数（Vesting Shares）
 
+截图方法：打开 MySmartAdvisor APP → 进入【股票期权】→ 点开每一笔限制性股票的【授予明细】→ 截图。如果有多个授予批次，每一批都截，全部上传。截图需包含总授予股数、授予日期、所有归属日期、归属股数。
+
 请严格按以下 JSON 格式返回，不要任何其他文字：
 
 {"grants":[{"grant_date":"YYYY-MM-DD","grant_shares":整数,"vesting_schedule":[{"vesting_date":"YYYY-MM-DD","vesting_shares":整数}]}]}
