@@ -29,9 +29,7 @@ jobs:
   # schedule / workflow_dispatch(update_data=true) 时执行；普通 push 跳过
   update-data:
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.update_data == 'true')
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.update_data == 'true') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -73,7 +71,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     # 等待数据更新 job 完成后再拉取最新代码；update-data 被跳过（普通 push）时也继续执行
-    if: !cancelled()
+    if: ${{ !cancelled() }}
     needs: [update-data]
     steps:
       - name: Checkout
